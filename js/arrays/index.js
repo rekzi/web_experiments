@@ -89,7 +89,7 @@ function sort () {
 			column === 0 ? // tr > td[column]
 				getTd0ForTextContent(trs[index].children[column]).textContent :
 				trs[index].children[column].textContent
-		).trim();
+		).trim().toLowerCase();
 
 	for (const column of sortOrderType.keys()) {
 

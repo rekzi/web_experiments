@@ -1,4 +1,8 @@
-tbody tr:hover,
+@media (hover: hover) {
+	tbody tr:hover {
+		background-color: rgb(255, 255, 83);
+	}
+}
 .select {
 	background-color: rgb(255, 255, 83) !important;
 }
