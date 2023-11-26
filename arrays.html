@@ -1,13 +1,29 @@
 <!DOCTYPE html>
+<html>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
+    <!-- Google tag (gtag.js) -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-7RK35HBXQ8"></script>
+	<script>
+
+window.dataLayer = window.dataLayer || [];
+
+function gtag () { dataLayer.push(arguments); }
+
+gtag('js', new Date());
+
+gtag('config', 'G-7RK35HBXQ8');
+
+	</script>
+
+    <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/arrays.css">
 
     <title>JavaScript array methods</title>
 </head>
-<html>
+<body>
 
 <div class="wrapper">
     <div id="table"></div>
@@ -22,8 +38,5 @@
 <script src="js/arrays/data.js"></script>
 <script src="js/arrays/index.js"></script>
 
-<!--script id="__bs_script__">//<![CDATA[
-    document.write("<script async src='http://HOST:3000/browser-sync/browser-sync-client.js'><\/script>".replace("HOST", location.hostname));
-//]]></script-->
-
+</body>
 </html>

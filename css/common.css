@@ -1,0 +1,60 @@
+body {
+    background-color: rgba(211, 211, 211, 0.678);
+}
+
+.wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+table {
+	border: 2px solid gray;
+	border-radius: 5px;
+	border-spacing: 0;
+}
+
+thead tr,
+tfoot tr {
+	background-color: rgb(209, 209, 209);
+	position: sticky;
+}
+
+thead tr {
+	top: 0;
+}
+
+tfoot tr {
+	bottom: 0;
+}
+
+tbody tr:nth-child(even) {
+	background-color: rgb(241, 241, 241);
+}
+
+thead th:last-child,
+tbody td:last-child, 
+tfoot td:last-child {
+	border-right: none;
+}
+tbody > tr:last-child > td {
+	border-bottom: none;
+}
+
+footer {
+	text-align: center;
+}
+
+.triangle-down,
+.triangle-down-fill,
+.triangle-up-fill {
+	padding-left: 0.5em;
+}
+.triangle-down:after {
+	content: '▿';
+}
+.triangle-down-fill:after {
+	content: '▾';
+}
+.triangle-up-fill:after {
+	content: '▴';
+}

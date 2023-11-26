@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
 
-    "live": "npx browser-sync start --server --files \"./js/**/*.js,./css/*.css,./*.html\""
+    "live": "npx browser-sync start --server --files \"./js/**/*.js,./css/**/*.css,./*.html\""
   },
   "keywords": [],
   "author": "",

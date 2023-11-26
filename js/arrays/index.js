@@ -1,12 +1,12 @@
 const log = console.log;
 
-function createRow (method, args, returned, result, comment) {
+function createRow (method, args, returned, result, comment, link) {
 
 	return `
 		<tr>
 			<td>
 				<div>
-					${ method }
+					<a href=${ link }>${ method }</a>
 					${ comment ? `<div class="comment">${ comment }</div>` : '' }
 				</div>
 			</td>
@@ -15,6 +15,7 @@ function createRow (method, args, returned, result, comment) {
 			<td>${ result }</td>
 		</tr>`;
 }
+const getTd0ForTextContent = (td) => td.children[0].children[0]; // td > div > a
 
 const wrap = document.getElementById('table');
 
@@ -27,36 +28,19 @@ wrap.innerHTML = `
 <table>
 	<thead>
 		<tr>
+			${ ['method', 'args', 'return', 'changed'].map(title => `
 			<th>
 				<div>
-					method
+					${ title }
 					<div class="${ triangleDown }"></div>
 				</div>
-			</th>
-			<th>
-				<div>
-					args
-					<div class="${ triangleDown }"></div>
-				</div>
-			</th>
-			<th>
-				<div>
-					return
-					<div class="${ triangleDown }"></div>
-				</div>
-			</th>
-			<th>
-				<div>
-					change
-					<div class="${ triangleDown }"></div>
-				</div>
-			</th>
+			</th>`).join('') }
 		</tr>
 	</thead>
 	<tbody>
 		${ methods.map(props => createRow(...props)).join('') }
 	</tbody>
-	<tfoot>
+	<tfoot style="display: none">
 		<tr>
 			<td colspan="4" title="Copy link">
 				<div id="link" />
@@ -101,41 +85,43 @@ function sort () {
 
 	let trs = trsDefaultOrderArray.slice();
 
-	if (sortOrderType.size > 0)
-		for (const column of sortOrderType.keys()) {
+	const getText = (trs, column, index) => (
+			column === 0 ? // tr > td[column]
+				getTd0ForTextContent(trs[index].children[column]).textContent :
+				trs[index].children[column].textContent
+		).trim();
 
-			const state = sortOrderType.get(column);
+	for (const column of sortOrderType.keys()) {
+
+		const state = sortOrderType.get(column);
 			
-			for (let index = 0; index < trs.length; index++) {
-				for (let index2 = index + 1; index2 < trs.length; index2++) {
-					
-					const tdContent = (column === 0 ? // tr > td[column] > div > el
-						trs[index].children[column].children[0].firstChild.textContent :
-						trs[index].children[column].textContent).trim(); // tr > td[column]
+		const sortedTrs = [trs[0]];
 
-					const tdContent2 = (column === 0 ? 
-						trs[index2].children[column].children[0].firstChild.textContent :
-						trs[index2].children[column].textContent).trim();
-					
-					if (tdContent < tdContent2 && state === 1 ||
-						tdContent > tdContent2 && state === 2) {
-						
-						trs[index2 - 1].after(trs[index]);
-						
-						if (index - 1 < 0)
-							tbody.prepend(trs[index2]);
-						else
-							trs[index - 1].after(trs[index2]);
+		for (let index = 1; index < trs.length; index++) {
+			const tdContent = getText(trs, column, index);
 
-						const temp = trs[index];
-						trs[index] = trs[index2];
-						trs[index2] = temp;
-					}
+			let isInserted = false;
+			for (let index2 = sortedTrs.length - 1; index2 >= 0; index2--) {
+				const tdContent2 = getText(sortedTrs, column, index2);
+					
+				if (tdContent < tdContent2 && state === 2 ||
+					tdContent > tdContent2 && state === 1) {
+
+					sortedTrs.splice(index2 + 1, 0, trs[index]);
+					isInserted = true;
+						
+					break;
 				}
 			}
+
+			if (! isInserted)
+				sortedTrs.unshift(trs[index]);
 		}
-	else
-		trsDefaultOrderArray.forEach((tr) => tbody.appendChild(tr));
+
+		trs = sortedTrs;
+	}
+
+	trs.forEach((tr) => tbody.appendChild(tr));
 }
 
 function updateHash () {
@@ -146,8 +132,8 @@ function updateHash () {
 
 		hash = allMethods.filter(method => ! selectedMethods.includes(method))
 			.join() + hashExcludeFlagDelimiter + hashExcludeFlag;
-		else
-			hash = selectedMethods.join(hashListSplitter);
+	else
+		hash = selectedMethods.join(hashListSplitter);
 
 	if (sortOrderType.size > 0) {
 		hash += hashFragmentsSplitter;
@@ -161,8 +147,8 @@ function updateHash () {
 
 tbody.querySelectorAll('tr').forEach((tr) => {
 	
-	// tr > td[0] > div > el
-	const method = tr.children[0].children[0].firstChild.textContent.trim();
+	// tr > td[0]
+	const method = getTd0ForTextContent(tr.children[0]).textContent.trim();
 	allMethods.push(method);
 
 	tr.addEventListener('click', () => {
@@ -192,8 +178,8 @@ if (hashMethodsFragment.length === 2 && hashMethodsFragment[1] === hashExcludeFl
 else
 	selectedMethods = allMethods.filter(method => methodsFromHash.includes(method));
 
-trsDefaultOrderArray.filter(tr => // tr > td[0] > div > el
-		selectedMethods.includes(tr.children[0].children[0].firstChild.textContent.trim()))
+trsDefaultOrderArray.filter(tr => // tr > td[0]
+		selectedMethods.includes(getTd0ForTextContent(tr.children[0]).textContent.trim()))
 	.map(tr => tr.classList.add(cssSelectClass));
 
 // select sorts
@@ -206,19 +192,20 @@ if (hashFragments[1]) {
 		
 		if (sortN.length !== 2) continue;
 
-		const column = Number(sortN[0]);
-		const type = Number(sortN[1]);
+		const column = parseInt(sortN[0]);
+		const type = parseInt(sortN[1]);
 
-		if (column >= 0 && column < headers.length && column % 1 === 0 &&
+		if (column >= 0 && column < headers.length &&
 			(type === 1 || type === 2)) {
 			
 			sortOrderType.delete(column);
 			sortOrderType.set(column, type);
 
+			const triangle = headers[column].children[0].children[0];
 			if (type === 1) // th > div(flex) > div
-				headers[column].children[0].children[0].className = triangleDownFill;
-			else if (type === 2)
-				headers[column].children[0].children[0].className = triangleUpFill;
+				triangle.className = triangleUpFill;
+			else
+				triangle.className = triangleDownFill;
 		}
 	}
 
@@ -236,21 +223,17 @@ headers.forEach((el, i) => {
 			
 		state++; if (state === 3) state = 0;
 
-		if (state === 0) {
+		sortOrderType.delete(i);
+		if (state === 0)
 			sortLabel.className = triangleDown;
-
-			sortOrderType.delete(i);
-		}
 		else if (state === 1) {
-			sortLabel.className = triangleDownFill;
+			sortLabel.className = triangleUpFill;
 
-			sortOrderType.delete(i);
 			sortOrderType.set(i, state); 
 		}
 		else if (state === 2) {
-			sortLabel.className = triangleUpFill;
+			sortLabel.className = triangleDownFill;
 
-			sortOrderType.delete(i);
 			sortOrderType.set(i, state); 
 		}		
 
@@ -270,10 +253,11 @@ else {
 
 	linkEl.textContent = linkElGreet;
 
-	const footTr = linkEl.parentElement.parentElement;
+	const tfootTr = linkEl.parentElement.parentElement;
+	tfootTr.parentElement.style.display = '';
 
 	let hideTimeout;
-	footTr.addEventListener('click', async () => {
+	tfootTr.addEventListener('click', async () => {
 
 		await navigator.clipboard.writeText(document.location.href)
 			.then(() => {
