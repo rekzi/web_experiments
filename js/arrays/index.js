@@ -165,6 +165,8 @@ tbody.querySelectorAll('tr').forEach((tr) => {
 		updateHash();
 	});
 });
+tbody.querySelectorAll('tr > td a').forEach((a) => 
+	a.addEventListener('click', (event) => event.stopPropagation()));
 
 // update UI from url hash
 const hashFragments = decodeURIComponent(document.location.hash.substring(1))
