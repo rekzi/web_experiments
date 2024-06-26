@@ -17,6 +17,7 @@ thead tr,
 tfoot tr {
 	background-color: rgb(209, 209, 209);
 	position: sticky;
+	z-index: 1;
 }
 
 thead tr {
@@ -32,7 +33,7 @@ tbody tr:nth-child(even) {
 }
 
 thead th:last-child,
-tbody td:last-child, 
+tbody td:last-child,
 tfoot td:last-child {
 	border-right: none;
 }

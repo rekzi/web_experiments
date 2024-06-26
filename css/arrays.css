@@ -24,7 +24,7 @@ tbody > tr > td:first-child > div {
 	font-weight: bold;
 	display: flex;
 	justify-content: space-between;
-	padding: 2px 0 2px 4px;
+	padding: 2px 0 2px 10px;
 }
 
 tfoot > tr > td {
@@ -58,4 +58,26 @@ thead th > div {
 	justify-content: center;
 	align-items: center;
 	padding: 4px 7px 4px 7px;
+}
+
+:root {
+	--typed_array_method-color: rgb(9, 255, 0);
+}
+table > tbody > tr.typed_array_method > td:first-child {
+	position: relative;
+}
+table > tbody > tr.typed_array_method > td:first-child::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 5px;
+	height: 100%;
+	background-color: var(--typed_array_method-color);
+}
+.typed_array_method-label {
+	display: inline-block;
+	width: 13px;
+	height: 13px;
+	background-color: var(--typed_array_method-color);
 }

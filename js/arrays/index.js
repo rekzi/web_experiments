@@ -1,9 +1,14 @@
 const log = console.log;
 
-function createRow (method, args, returned, result, comment, link) {
+function createRow (method, args, returns, changeOriginal, comment, ...tailArgs) {
 
-	return `
-		<tr>
+	const dataIndex = tailArgs.at(-1);
+	const link = tailArgs.at(-2);
+
+	const isTypedArrayMethod = tailArgs.length > 2; // dataIndex & link
+
+	return (
+		`<tr data-index="${ dataIndex }" ${ isTypedArrayMethod ? 'class="typed_array_method"' : '' }>
 			<td>
 				<div>
 					<a href=${ link }>${ method }</a>
@@ -11,18 +16,17 @@ function createRow (method, args, returned, result, comment, link) {
 				</div>
 			</td>
 			<td>${ args }</td>
-			<td>${ returned }</td>
-			<td>${ result }</td>
-		</tr>`;
+			<td>${ returns }</td>
+			<td>${ changeOriginal }</td>
+		</tr>`);
 }
-const getTd0ForTextContent = (td) => td.children[0].children[0]; // td > div > a
 
 const wrap = document.getElementById('table');
 
-const cssSelectClass = 'select';
-const triangleDown = 'triangle-down';
-const triangleDownFill = 'triangle-down-fill';
-const triangleUpFill = 'triangle-up-fill';
+const cssSelectedClass = 'select';
+const cssTriangleDownClass = 'triangle-down';
+const cssTriangleDownFillClass = 'triangle-down-fill';
+const cssTriangleUpFillClass = 'triangle-up-fill';
 
 wrap.innerHTML = `
 <table>
@@ -32,13 +36,13 @@ wrap.innerHTML = `
 			<th>
 				<div>
 					${ title }
-					<div class="${ triangleDown }"></div>
+					<div class="${ cssTriangleDownClass }"></div>
 				</div>
 			</th>`).join('') }
 		</tr>
 	</thead>
 	<tbody>
-		${ methods.map(props => createRow(...props)).join('') }
+		${ methods.map((props, index) => createRow(...props, index)).join('') }
 	</tbody>
 	<tfoot style="display: none">
 		<tr>
@@ -49,6 +53,7 @@ wrap.innerHTML = `
 	</tfoot>
 </table>
 <ul>
+	<li><span class="typed_array_method-label"></span> – typed arrays support this method
 	<li>… – some entities
 	<li>○ – value
 	<li>● – specific value
@@ -72,44 +77,42 @@ const tbody = wrap.querySelector('tbody');
 const trsDefaultOrderArray = Array.from(tbody.querySelectorAll('tr'));
 const sortOrderType = new Map();
 
-const allMethods = [];
+const allMethods = methods.map((method) => method[0]); // names
 let selectedMethods = [];
 
-const hashListSplitter = ',';
-const hashExcludeFlag = 'e';
-const hashExcludeFlagDelimiter = '_';
-const hashFragmentsSplitter = '__';
-const hashSortColumnAndTypeSplitter = '-';
+const hashProps = {
+	fragmentsSplitter: '__',
+	listSplitter: ',',
+	excludeFlag: 'e',
+	excludeFlagDelimiter: '_',
+	sortColumnAndTypeSplitter: '-',
+};
 
 function sort () {
 
 	let trs = trsDefaultOrderArray.slice();
 
-	const getText = (trs, column, index) => (
-			column === 0 ? // tr > td[column]
-				getTd0ForTextContent(trs[index].children[column]).textContent :
-				trs[index].children[column].textContent
-		).trim().toLowerCase();
-
 	for (const column of sortOrderType.keys()) {
 
 		const state = sortOrderType.get(column);
-			
+
 		const sortedTrs = [trs[0]];
 
 		for (let index = 1; index < trs.length; index++) {
-			const tdContent = getText(trs, column, index);
+
+			const tdContent = methods[trs[index].dataset.index][column].trim().toLowerCase();
 
 			let isInserted = false;
 			for (let index2 = sortedTrs.length - 1; index2 >= 0; index2--) {
-				const tdContent2 = getText(sortedTrs, column, index2);
-					
+
+				const tdContent2 = methods[sortedTrs[index2].dataset.index][column].trim().toLowerCase();
+
 				if (tdContent < tdContent2 && state === 2 ||
 					tdContent > tdContent2 && state === 1) {
 
 					sortedTrs.splice(index2 + 1, 0, trs[index]);
 					isInserted = true;
-						
+
 					break;
 				}
 			}
@@ -131,67 +134,61 @@ function updateHash () {
 	if (selectedMethods.length > allMethods.length / 2)
 
 		hash = allMethods.filter(method => ! selectedMethods.includes(method))
-			.join() + hashExcludeFlagDelimiter + hashExcludeFlag;
+			.join(hashProps.listSplitter) + hashProps.excludeFlagDelimiter + hashProps.excludeFlag;
 	else
-		hash = selectedMethods.join(hashListSplitter);
+		hash = selectedMethods.join(hashProps.listSplitter);
 
 	if (sortOrderType.size > 0) {
-		hash += hashFragmentsSplitter;
+		hash += hashProps.fragmentsSplitter;
 		hash += [...sortOrderType.keys()].map(
-				column => column + hashSortColumnAndTypeSplitter + sortOrderType.get(column))
-			.join(hashListSplitter);
+				column => column + hashProps.sortColumnAndTypeSplitter + sortOrderType.get(column))
+			.join(hashProps.listSplitter);
 	}
 
 	document.location.hash = encodeURIComponent(hash);
 }
 
 tbody.querySelectorAll('tr').forEach((tr) => {
-	
-	// tr > td[0]
-	const method = getTd0ForTextContent(tr.children[0]).textContent.trim();
-	allMethods.push(method);
 
-	tr.addEventListener('click', () => {
-		
-		tr.classList.toggle(cssSelectClass);
+	tr.addEventListener('click', (event) => {
 
-		if (tr.classList.contains(cssSelectClass))
+		tr.classList.toggle(cssSelectedClass);
 
-			selectedMethods.push(method);
+		if (tr.classList.contains(cssSelectedClass))
+			selectedMethods.push(methods[tr.dataset.index][0]);
 		else
 			selectedMethods.splice(
-				selectedMethods.findIndex(str => method === str), 1);
+				selectedMethods.findIndex(str => methods[tr.dataset.index][0] === str), 1);
 
 		updateHash();
 	});
 });
-tbody.querySelectorAll('tr > td a').forEach((a) => 
+tbody.querySelectorAll('tr > td a').forEach((a) =>
 	a.addEventListener('click', (event) => event.stopPropagation()));
 
 // update UI from url hash
 const hashFragments = decodeURIComponent(document.location.hash.substring(1))
-	.split(hashFragmentsSplitter);
-const hashMethodsFragment = hashFragments[0].split(hashExcludeFlagDelimiter);
-const methodsFromHash = hashMethodsFragment[0].split(hashListSplitter);
+	.split(hashProps.fragmentsSplitter);
+const hashMethodsFragment = hashFragments[0].split(hashProps.excludeFlagDelimiter);
+const methodsFromHash = hashMethodsFragment[0].split(hashProps.listSplitter);
 
 // select methods
-if (hashMethodsFragment.length === 2 && hashMethodsFragment[1] === hashExcludeFlag)
+if (hashMethodsFragment.length === 2 && hashMethodsFragment[1] === hashProps.excludeFlag)
 	selectedMethods = allMethods.filter(method => ! methodsFromHash.includes(method));
 else
 	selectedMethods = allMethods.filter(method => methodsFromHash.includes(method));
 
-trsDefaultOrderArray.filter(tr => // tr > td[0]
-		selectedMethods.includes(getTd0ForTextContent(tr.children[0]).textContent.trim()))
-	.map(tr => tr.classList.add(cssSelectClass));
+trsDefaultOrderArray.filter(tr => selectedMethods.includes(methods[tr.dataset.index][0]))
+	.map(tr => tr.classList.add(cssSelectedClass));
 
 // select sorts
 if (hashFragments[1]) {
 
-	const sorts = hashFragments[1].split(hashListSplitter);
+	const sorts = hashFragments[1].split(hashProps.listSplitter);
 
 	for (let sortN of sorts) {
-		sortN = sortN.split(hashSortColumnAndTypeSplitter);
-		
+		sortN = sortN.split(hashProps.sortColumnAndTypeSplitter);
+
 		if (sortN.length !== 2) continue;
 
 		const column = parseInt(sortN[0]);
@@ -199,15 +196,15 @@ if (hashFragments[1]) {
 
 		if (column >= 0 && column < headers.length &&
 			(type === 1 || type === 2)) {
-			
+
 			sortOrderType.delete(column);
 			sortOrderType.set(column, type);
 
-			const triangle = headers[column].children[0].children[0];
-			if (type === 1) // th > div(flex) > div
-				triangle.className = triangleUpFill;
+			const triangle = headers[column].children[0].children[0]; // th > div(flex) > div
+			if (type === 1)
+				triangle.className = cssTriangleUpFillClass;
 			else
-				triangle.className = triangleDownFill;
+				triangle.className = cssTriangleDownFillClass;
 		}
 	}
 
@@ -216,28 +213,28 @@ if (hashFragments[1]) {
 }
 
 headers.forEach((el, i) => {
-	
+
 	let state = sortOrderType.get(i) ? sortOrderType.get(i) : 0;
 
 	const sortLabel = el.querySelector('div > div'); // flex div > sort label
 
 	el.addEventListener('click', () => {
-			
+
 		state++; if (state === 3) state = 0;
 
 		sortOrderType.delete(i);
 		if (state === 0)
-			sortLabel.className = triangleDown;
+			sortLabel.className = cssTriangleDownClass;
 		else if (state === 1) {
-			sortLabel.className = triangleUpFill;
+			sortLabel.className = cssTriangleUpFillClass;
 
-			sortOrderType.set(i, state); 
+			sortOrderType.set(i, state);
 		}
 		else if (state === 2) {
-			sortLabel.className = triangleDownFill;
+			sortLabel.className = cssTriangleDownFillClass;
 
-			sortOrderType.set(i, state); 
-		}		
+			sortOrderType.set(i, state);
+		}
 
 		sort();
 		updateHash();
@@ -249,7 +246,7 @@ if (! navigator.clipboard || ! navigator.clipboard.writeText)
 
 	throw new Error('Clipboard API disabled in your browser.');
 else {
-	
+
 	const linkEl = document.getElementById('link');
 	const linkElGreet = 'Click here to copy the page`s link with saving selected items and sorting';
 
