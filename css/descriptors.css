@@ -1,0 +1,28 @@
+table td {
+	min-width: 4ch;
+}
+
+tbody tr:hover th {
+	background-color: var(--hover-color);
+}
+tbody tr:hover th:hover {
+	background-color: initial;
+}
+.select {
+	background-color: var(--hover-color);
+}
+
+input, label {
+	cursor: pointer;
+}
+label {
+	user-select: none;
+}
+
+.passed {
+    background-color: lightgreen;
+}
+
+.failed {
+    background-color: lightcoral;
+}

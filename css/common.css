@@ -1,3 +1,7 @@
+:root {
+	--hover-color: rgb(255, 255, 83);
+}
+
 body {
     background-color: rgba(211, 211, 211, 0.678);
 }
@@ -13,18 +17,28 @@ table {
 	border-spacing: 0;
 }
 
-thead tr,
-tfoot tr {
+table th,
+table td {
+	border-bottom: 1px solid gray;
+	border-right: 1px solid gray;
+}
+
+table td {
+	text-align: center;
+}
+
+thead,
+tfoot {
 	background-color: rgb(209, 209, 209);
 	position: sticky;
 	z-index: 1;
 }
 
-thead tr {
+thead {
 	top: 0;
 }
 
-tfoot tr {
+tfoot {
 	bottom: 0;
 }
 

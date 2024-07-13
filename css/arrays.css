@@ -1,23 +1,17 @@
 @media (hover: hover) {
 	tbody tr:hover {
-		background-color: rgb(255, 255, 83);
+		background-color: var(--hover-color);
 	}
 }
 .select {
-	background-color: rgb(255, 255, 83) !important;
+	background-color: var(--hover-color) !important;
 }
 
 table th, td {
-	border-bottom: 1px solid gray;
-	border-right: 1px solid gray;
 	cursor: pointer;
 }
 table th {
 	user-select: none;
-}
-
-table td {
-	text-align: center;
 }
 
 tbody > tr > td:first-child > div {
@@ -46,6 +40,7 @@ tfoot > tr > td > div {
 	font-size: 1.2em;
 	font-weight: normal;
 	padding: 0 5px;
+	text-wrap: nowrap;
 }
 
 ul {
