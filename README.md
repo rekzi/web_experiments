@@ -1,8 +1,8 @@
 ## Content
 
 ### JavaScript
-[Cheats sheet (or table) of Array methods and typed arrays support](https://rekzi.github.io/web_experiments/arrays.html)  
-[All property descriptor variations and its impact to handle property](https://rekzi.github.io/web_experiments/descriptors.html)
+* [Cheats sheet (or table) of Array methods and typed arrays support](https://rekzi.github.io/web_experiments/arrays.html)
+* [All property descriptor variations and its impact to handle property](https://rekzi.github.io/web_experiments/descriptors.html)
 
 ### Set, WeakSet, Map, WeakMap
 

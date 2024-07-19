@@ -1,5 +1,7 @@
 const log = console.log;
 
+const STRICT_MODE = true;
+
 const descriptorPropNames = {
 	configurable: 'conf.',
 	enumerable: 'enum.',
@@ -50,7 +52,7 @@ const wrap = document.getElementById('table');
 const checkbox = document.createElement('input');
 checkbox.type = 'checkbox';
 checkbox.id = 'checkbox';
-checkbox.checked = true;
+checkbox.checked = STRICT_MODE;
 
 checkbox.addEventListener('change', (event) => {
 	setResults(event.target.checked);
@@ -113,10 +115,10 @@ Object.keys(testDescriptions).forEach((key) => {
 
 function runTest(checkF, ifPassedF) {
     try {
-        checkF();
+        const result = checkF();
 		if (ifPassedF) ifPassedF();
 
-        return true;
+        return result;
 	} catch (error) {
 
 		return error;
@@ -133,58 +135,80 @@ function runTestsInNonStrictMode (obj) {
 
 	const isWithAccessors = !!(descriptor.get || descriptor.set);
 
+	const TEMP_P_PREFIX= 'temp';
+
 	testResults[testDescriptions.write.p] = runTest(
-		() => obj[PROPERTY_NAME] = PROPERTY_VALUE + 1,
+		() => {
+			obj[PROPERTY_NAME] = PROPERTY_VALUE + 1;
+
+			return obj[PROPERTY_NAME] === PROPERTY_VALUE + 1;
+		},
 		() => obj[PROPERTY_NAME] = PROPERTY_VALUE);
 
     testResults[testDescriptions.enumerate.p] = Object.keys(obj).includes(PROPERTY_NAME);
 
 	testResults[testDescriptions.chConfigurable.p] = runTest(() => {
-		const lProperty = PROPERTY_NAME + '_temp_conf';
+		const lProperty = TEMP_P_PREFIX + '_' + PROPERTY_NAME + '_' + testDescriptions.chConfigurable.p;
 		Object.defineProperty(obj, lProperty, descriptor);
 		Object.defineProperty(obj, lProperty, { configurable: ! descriptor.configurable });
+
+		return Object.getOwnPropertyDescriptor(obj, lProperty).configurable === ! descriptor.configurable;
 	});
 
 	testResults[testDescriptions.chEnumerable.p] = runTest(() => {
-		const lProperty = PROPERTY_NAME + '_temp_enum';
+		const lProperty = TEMP_P_PREFIX + '_' + PROPERTY_NAME + '_' + testDescriptions.chEnumerable.p;
 		Object.defineProperty(obj, lProperty, descriptor);
 		Object.defineProperty(obj, lProperty, { enumerable: ! descriptor.enumerable });
+
+		return Object.getOwnPropertyDescriptor(obj, lProperty).enumerable === ! descriptor.enumerable;
 	});
 
 	testResults[testDescriptions.del.p] = runTest(() => {
-		const lProperty = PROPERTY_NAME + '_temp_d';
+		const lProperty = TEMP_P_PREFIX + '_' + PROPERTY_NAME + '_' + testDescriptions.del.p;
 		Object.defineProperty(obj, lProperty, descriptor);
 		delete obj[lProperty];
+
+		return obj[lProperty] === undefined;
 	});
 
 	if (! isWithAccessors) { // data descriptor
 		testResults[testDescriptions.chWritable.p] = runTest(() => {
-			const lProperty = PROPERTY_NAME + '_temp_w';
+			const lProperty = TEMP_P_PREFIX + '_' + PROPERTY_NAME + '_' + testDescriptions.chWritable.p;
 			Object.defineProperty(obj, lProperty, descriptor);
 			Object.defineProperty(obj, lProperty, { writable: ! descriptor.writable });
+
+			return Object.getOwnPropertyDescriptor(obj, lProperty).writable === ! descriptor.writable;
 		});
 
 		testResults[testDescriptions.chValue.p] = runTest(
-			() => Object.defineProperty(obj, PROPERTY_NAME, { value: PROPERTY_VALUE + 1 }),
+			() => {
+				Object.defineProperty(obj, PROPERTY_NAME, { value: PROPERTY_VALUE + 1 });
+
+				return obj[PROPERTY_NAME] === PROPERTY_VALUE + 1;
+			},
 			() => Object.defineProperty(obj, PROPERTY_NAME, { value: PROPERTY_VALUE }));
 	}
 	else {
 		testResults[testDescriptions.read.p] = ! (typeof obj[PROPERTY_NAME] === 'undefined');
 
 		testResults[testDescriptions.chGet.p] = runTest(() => {
-			const lProperty = PROPERTY_NAME + '_temp_get';
+			const lProperty = TEMP_P_PREFIX + '_' + PROPERTY_NAME + '_' + testDescriptions.chGet.p;
 			Object.defineProperty(obj, lProperty, descriptor);
-			Object.defineProperty(obj, lProperty, {
-				get: descriptor.get ? undefined : getF
-			});
+
+			const f = () => {};
+			Object.defineProperty(obj, lProperty, { get: f });
+
+			return Object.getOwnPropertyDescriptor(obj, lProperty).get === f;
 		});
 
 		testResults[testDescriptions.chSet.p] = runTest(() => {
-			const lProperty = PROPERTY_NAME + '_temp_set';
+			const lProperty = TEMP_P_PREFIX + '_' + PROPERTY_NAME + '_' + testDescriptions.chSet.p;
 			Object.defineProperty(obj, lProperty, descriptor);
-            Object.defineProperty(obj, lProperty, {
-				set: descriptor.set ? undefined : setF
-			});
+
+			const f = () => {};
+            Object.defineProperty(obj, lProperty, { set: f });
+
+			return Object.getOwnPropertyDescriptor(obj, lProperty).set === f;
 		});
 	}
 
@@ -251,7 +275,7 @@ for (let i = 0; i <= (j === 0 ? 7 : 11); i++) { // bit-mask = vzyx
 	});
 }
 
-function setResults (strictMode=true) {
+function setResults (strictMode) {
 
 	let column = 0;
 
@@ -291,7 +315,7 @@ function setResults (strictMode=true) {
 		column++;
 	}
 };
-setResults();
+setResults(STRICT_MODE);
 
 // hover affect
 cells.forEach((row) => {
