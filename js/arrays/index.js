@@ -1,4 +1,8 @@
+// eslint-disable-next-line no-unused-vars
 const log = console.log;
+// methods got from page scope, fix eslint warnings -->
+// eslint-disable-next-line no-undef
+const methodsData = methods; { let methods = methodsData;
 
 function createRow (method, args, returns, changeOriginal, comment, ...tailArgs) {
 
@@ -77,7 +81,7 @@ const tbody = wrap.querySelector('tbody');
 const trsDefaultOrderArray = Array.from(tbody.querySelectorAll('tr'));
 const sortOrderType = new Map();
 
-const allMethods = methods.map((method) => method[0]); // names
+const allMethodNames = methods.map((method) => method[0]);
 let selectedMethods = [];
 
 const hashProps = {
@@ -131,9 +135,9 @@ function updateHash () {
 
 	let hash;
 
-	if (selectedMethods.length > allMethods.length / 2)
+	if (selectedMethods.length > allMethodNames.length / 2)
 
-		hash = allMethods.filter(method => ! selectedMethods.includes(method))
+		hash = allMethodNames.filter(method => ! selectedMethods.includes(method))
 			.join(hashProps.listSplitter) + hashProps.excludeFlagDelimiter + hashProps.excludeFlag;
 	else
 		hash = selectedMethods.join(hashProps.listSplitter);
@@ -150,7 +154,7 @@ function updateHash () {
 
 tbody.querySelectorAll('tr').forEach((tr) => {
 
-	tr.addEventListener('click', (event) => {
+	tr.addEventListener('click', () => {
 
 		tr.classList.toggle(cssSelectedClass);
 
@@ -174,9 +178,9 @@ const methodsFromHash = hashMethodsFragment[0].split(hashProps.listSplitter);
 
 // select methods
 if (hashMethodsFragment.length === 2 && hashMethodsFragment[1] === hashProps.excludeFlag)
-	selectedMethods = allMethods.filter(method => ! methodsFromHash.includes(method));
+	selectedMethods = allMethodNames.filter(method => ! methodsFromHash.includes(method));
 else
-	selectedMethods = allMethods.filter(method => methodsFromHash.includes(method));
+	selectedMethods = allMethodNames.filter(method => methodsFromHash.includes(method));
 
 trsDefaultOrderArray.filter(tr => selectedMethods.includes(methods[tr.dataset.index][0]))
 	.map(tr => tr.classList.add(cssSelectedClass));
@@ -266,3 +270,5 @@ else {
 			});
 	});
 }
+
+} // <-- methods got from page scope, fix eslint warnings

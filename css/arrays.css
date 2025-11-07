@@ -20,6 +20,11 @@ tbody > tr > td:first-child > div {
 	justify-content: space-between;
 	padding: 2px 0 2px 10px;
 }
+tbody > tr > td:nth-child(2),
+tbody > tr > td:nth-child(3) {
+	padding-left: 5px;
+	padding-right: 5px;
+}
 
 tfoot > tr > td {
 	border-top: 1px solid gray;

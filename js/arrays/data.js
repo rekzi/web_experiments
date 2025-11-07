@@ -30,7 +30,6 @@ const CHANGED = {
 
 const TYPED_ARRAY_METHOD = 'yes';
 
-// TODO: Array.fromAsync
 const methods = [
 
 	['Array.of',		ARGS.AxFrom0,			RETURNS.newArray, 			'-',			'…', 			TYPED_ARRAY_METHOD],
@@ -47,8 +46,10 @@ const methods = [
 	['findLast',		ARGS.checkFAndThis,		RETURNS.elOrUndefined,		CHANGED.no,		'●? …↫', 	TYPED_ARRAY_METHOD],
 	['includes',		ARGS.elAndFrom,			RETURNS.boolean,			CHANGED.no,		'●?', 		TYPED_ARRAY_METHOD],
 
-	['Array.from',		'array-like OR iterable, [ f(value?, index?) => newValue ]?, thisArg?',
+	['Array.from',		'array-like OR sync iterable, [ f(value?, index?) => newValue ]?, thisArg?',
 												RETURNS.newArray,			CHANGED.no,		'↬…', 		TYPED_ARRAY_METHOD],
+	['Array.fromAsync',	'array-like OR iterable, [ f(value?, index?) => promiseOfNewValue ]?, thisArg?',
+												'promise of new array',		CHANGED.no,		'↬…'],
 	['with',			'index, value',			RETURNS.newArray,			CHANGED.no, 	'…↨…', 		TYPED_ARRAY_METHOD],
 	['slice',			ARGS.interval,			RETURNS.newArray,			CHANGED.no,		'…↦…⇥…', 	TYPED_ARRAY_METHOD],
 	['concat',			ARGS.AxFrom0,			RETURNS.newArray,			CHANGED.no,		'…+…'],
@@ -91,6 +92,7 @@ const methods = [
 const urlPrefix = 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/';
 const urlSuffixes = [
 	['Array.from',		'from'],
+	['Array.fromAsync',	'fromAsync'],
 	['Array.isArray', 	'isArray'],
 	['Array.of', 		'of'],
 ];
